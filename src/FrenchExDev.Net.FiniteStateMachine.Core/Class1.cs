@@ -12,14 +12,17 @@ public enum TransitionResult
 }
 
 public class Transition<TClass, TState, TTrigger>
+    where TClass : notnull, new()
+    where TState : notnull
+    where TTrigger : notnull
 {
     public TState FromState { get; }
     public TState ToState { get; }
     public TTrigger Trigger { get; }
-    public Func<TClass, bool>? Condition { get; }
-    public Action<TClass>? Body { get; }
+    public Func<TClass, IFiniteStateMachine<TClass, TState, TTrigger>, bool>? Condition { get; }
+    public Action<TClass, IFiniteStateMachine<TClass, TState, TTrigger>>? Body { get; }
 
-    public Transition(TState fromState, TState toState, TTrigger trigger, Action<TClass>? body = null, Func<TClass, bool>? condition = null)
+    public Transition(TState fromState, TState toState, TTrigger trigger, Action<TClass, IFiniteStateMachine<TClass, TState, TTrigger>>? body = null, Func<TClass, IFiniteStateMachine<TClass, TState, TTrigger>, bool>? condition = null)
     {
         FromState = fromState;
         ToState = toState;
@@ -27,6 +30,17 @@ public class Transition<TClass, TState, TTrigger>
         Body = body;
         Condition = condition;
     }
+}
+
+public interface IFiniteStateMachineBuilder<TClass, TState, TTrigger>
+    where TClass : notnull, new()
+    where TState : notnull
+    where TTrigger : notnull
+{
+    FiniteStateMachineBuilder<TClass, TState, TTrigger> State(TState state);
+    FiniteStateMachineBuilder<TClass, TState, TTrigger> Transition(TState fromState, TState toState, TTrigger on, Action<TClass, IFiniteStateMachine<TClass, TState, TTrigger>>? body = null, Func<TClass, IFiniteStateMachine<TClass, TState, TTrigger>, bool>? condition = null);
+    FiniteStateMachine<TClass, TState, TTrigger> Build(TClass instance, TState initialState);
+    FiniteStateMachine<TClass, TState, TTrigger> Build(TState initialState);
 }
 
 public class FiniteStateMachineBuilder<TClass, TState, TTrigger>
@@ -52,7 +66,7 @@ public class FiniteStateMachineBuilder<TClass, TState, TTrigger>
         return this;
     }
 
-    public FiniteStateMachineBuilder<TClass, TState, TTrigger> Transition(TState fromState, TState toState, TTrigger on, Action<TClass>? body = null, Func<TClass, bool>? condition = null)
+    public FiniteStateMachineBuilder<TClass, TState, TTrigger> Transition(TTrigger on, TState fromState, TState toState,  Action<TClass, IFiniteStateMachine<TClass, TState, TTrigger>>? body = null, Func<TClass, IFiniteStateMachine<TClass, TState, TTrigger>, bool>? condition = null)
     {
         State(fromState);
         State(toState);
@@ -71,16 +85,27 @@ public class FiniteStateMachineBuilder<TClass, TState, TTrigger>
     }
 }
 
-public class FiniteStateMachine<TClass, TState, TTrigger>
+public interface IFiniteStateMachine<TClass, TState, TTrigger>
     where TClass : notnull
     where TState : notnull
     where TTrigger : notnull
 {
+    TransitionResult Fire(TTrigger trigger);
+    IEnumerable<TTrigger> GetPossibleTriggers();
+    TState CurrentState { get; }
+    TClass Object { get; }
+}
+
+public class FiniteStateMachine<TClass, TState, TTrigger> : IFiniteStateMachine<TClass, TState, TTrigger>
+    where TClass : notnull, new()
+    where TState : notnull
+    where TTrigger : notnull
+{
     private TClass _object;
+    public TClass Object => _object;
     private TState _currentState;
     private readonly Dictionary<TState, List<Transition<TClass, TState, TTrigger>>> _transitions = new();
     private readonly List<TState> _validStates = new();
-
     public TState CurrentState => _currentState;
 
     protected FiniteStateMachine(TClass instance, TState initialState, List<TState> states, Dictionary<TState, List<Transition<TClass, TState, TTrigger>>> transitions)
@@ -93,7 +118,8 @@ public class FiniteStateMachine<TClass, TState, TTrigger>
 
     public static FiniteStateMachine<TClass, TState, TTrigger> Create(TClass initialObject, TState initialState, List<TState> states, Dictionary<TState, List<Transition<TClass, TState, TTrigger>>> transitions)
     {
-        return new FiniteStateMachine<TClass, TState, TTrigger>(initialObject, initialState, states, transitions);
+        var fsm = new FiniteStateMachine<TClass, TState, TTrigger>(initialObject, initialState, states, transitions);
+        return fsm;
     }
 
     public TransitionResult Fire(TTrigger trigger)
@@ -105,14 +131,14 @@ public class FiniteStateMachine<TClass, TState, TTrigger>
             .Where(t => t.Trigger.Equals(trigger))
             .ToList();
 
-        var validTransition = possibleTransitions.FirstOrDefault(t => t.Condition == null || t.Condition(_object));
+        var validTransition = possibleTransitions.FirstOrDefault(t => t.Condition == null || t.Condition(_object, this));
 
         if (validTransition == null)
             return possibleTransitions.Any() ? TransitionResult.ConditionNotMet : TransitionResult.InvalidTransition;
 
         _currentState = validTransition.ToState;
 
-        validTransition.Body?.Invoke(_object);
+        validTransition.Body?.Invoke(_object, this);
 
         return TransitionResult.Success;
     }
