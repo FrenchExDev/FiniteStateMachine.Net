@@ -3,56 +3,7 @@
 namespace FrenchExDev.Net.FiniteStateMachine.Core.Tests;
 
 [TestClass]
-public sealed class Test1
-{
-    internal enum DoorState { Closed, Open, Locked }
-    internal enum DoorEvent { Open, Close, Lock, Unlock }
-    internal class Door
-    {
-        public bool Unlocked { get; set; }
-        public bool HasKey { get; set; }
-
-        public Door()
-        {
-        }
-    }
-
-    [TestMethod]
-    public void TestMethod1()
-    {
-        var doorFsmBuilder = new FiniteStateMachineBuilder<Door, DoorState, DoorEvent>();
-
-        doorFsmBuilder.Transition(fromState: DoorState.Closed, toState: DoorState.Open, on: DoorEvent.Open);
-        doorFsmBuilder.Transition(fromState: DoorState.Open, toState: DoorState.Closed, on: DoorEvent.Close);
-        doorFsmBuilder.Transition(fromState: DoorState.Closed, toState: DoorState.Locked, on: DoorEvent.Lock);
-        doorFsmBuilder.Transition(fromState: DoorState.Locked, toState: DoorState.Closed, on: DoorEvent.Unlock, body: (door, fsm) =>
-        {
-            door.Unlocked = true;
-            fsm.Fire(DoorEvent.Unlock).ShouldBeEquivalentTo(TransitionResult.InvalidTransition);
-        });
-
-        doorFsmBuilder.Transition(on: DoorEvent.Open, fromState: DoorState.Locked, toState: DoorState.Open, condition: (door, fsm) => door.HasKey);
-
-        var door1 = new Door();
-        var door1fsm = doorFsmBuilder.Build(door1, DoorState.Closed);
-
-        door1fsm.Fire(DoorEvent.Open).ShouldBeEquivalentTo(TransitionResult.Success);
-        door1fsm.CurrentState.ShouldBeEquivalentTo(DoorState.Open);
-
-        door1fsm.Fire(DoorEvent.Close).ShouldBeEquivalentTo(TransitionResult.Success);
-        door1fsm.CurrentState.ShouldBeEquivalentTo(DoorState.Closed);
-
-        door1fsm.Fire(DoorEvent.Lock).ShouldBeEquivalentTo(TransitionResult.Success);
-        door1fsm.CurrentState.ShouldBeEquivalentTo(DoorState.Locked);
-
-        door1fsm.Fire(DoorEvent.Unlock).ShouldBeEquivalentTo(TransitionResult.Success);
-        door1fsm.CurrentState.ShouldBeEquivalentTo(DoorState.Closed);
-        door1.Unlocked.ShouldBeTrue();
-    }
-}
-
-[TestClass]
-public sealed class Test2
+public sealed class DeviceFiniteStateMachineTests
 {
     [Flags]
     internal enum DeviceState
@@ -77,7 +28,7 @@ public sealed class Test2
     }
 
     internal record DeviceStateRecord(DeviceState State, Device Device, DateTime TimeStamp);
-    internal record DeviceEventRecord(DeviceEvent Event, Device Device, DateTime TimeStamp);
+    internal record DeviceEventRecord(DeviceEvent Event, Device Device, DateTime TimeStamp, DeviceStateRecord? State);
 
     internal enum DeviceEvent
     {
@@ -124,8 +75,11 @@ public sealed class Test2
 
         public Device History(DeviceState state, DeviceEvent @event, DateTime timeStamp)
         {
-            History(new DeviceStateRecord(state, this, timeStamp));
-            History(new DeviceEventRecord(@event, this, timeStamp));
+            var stateRecord = new DeviceStateRecord(state, this, timeStamp);
+            var eventRecord = new DeviceEventRecord(@event, this, timeStamp, stateRecord);
+            History(stateRecord)
+                .History(eventRecord);
+
             return this;
         }
     }
@@ -137,48 +91,44 @@ public sealed class Test2
         var fsmBuilder = new FiniteStateMachineBuilder<Device, DeviceState, DeviceEvent>();
 
         fsmBuilder
-            .Transition(on: DeviceEvent.Init, fromState: DeviceState.NotInitialized, toState: DeviceState.Initing, body: (device, fsm) =>
+            .CanTransition(on: DeviceEvent.Init, fromState: DeviceState.NotInitialized, toState: DeviceState.Initing, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: DeviceEvent.Initing, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Initing).ShouldBeEquivalentTo(TransitionResult.Success);
             })
-            .Transition(on: DeviceEvent.Initing, fromState: DeviceState.Initing, toState: DeviceState.Inited, body: (device, fsm) =>
+            .CanTransition(on: DeviceEvent.Initing, fromState: DeviceState.Initing, toState: DeviceState.Inited, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: DeviceEvent.Initing, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Inited).ShouldBeEquivalentTo(TransitionResult.Success);
             })
-            .Transition(on: DeviceEvent.Inited, fromState: DeviceState.Inited, toState: DeviceState.Available, body: (device, fsm) =>
+            .CanTransition(on: DeviceEvent.Inited, fromState: DeviceState.Inited, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: DeviceEvent.Inited, timeStamp: DateTime.UtcNow);
             })
-            .Transition(on: DeviceEvent.Connect, fromState: DeviceState.Available, toState: DeviceState.Connecting, body: (device, fsm) =>
+            .CanTransition(on: DeviceEvent.Connect, fromState: DeviceState.Available, toState: DeviceState.Connecting, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: DeviceEvent.Connect, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Connecting).ShouldBeEquivalentTo(TransitionResult.Success);
-
-            }, condition: (device, fsm) =>
-            {
-                return true;
             })
-            .Transition(on: DeviceEvent.Connecting, fromState: DeviceState.Connecting, toState: DeviceState.Connected, body: (device, fsm) =>
+            .CanTransition(on: DeviceEvent.Connecting, fromState: DeviceState.Connecting, toState: DeviceState.Connected, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: DeviceEvent.Connecting, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Online).ShouldBeEquivalentTo(TransitionResult.Success);
             })
-            .Transition(on: DeviceEvent.Online, fromState: DeviceState.Connected, toState: DeviceState.Online, body: (device, fsm) =>
+            .CanTransition(on: DeviceEvent.Online, fromState: DeviceState.Connected, toState: DeviceState.Online, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: DeviceEvent.Connecting, timeStamp: DateTime.UtcNow);
             })
-            .Transition(on: DeviceEvent.Disconnect, fromState: DeviceState.Online, toState: DeviceState.Available, body: (device, fsm) =>
+            .CanTransition(on: DeviceEvent.Disconnect, fromState: DeviceState.Online, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: DeviceEvent.Disconnect, timeStamp: DateTime.UtcNow);
             })
-            .Transition(on: DeviceEvent.Disconnected, fromState: DeviceState.Disconnecting, toState: DeviceState.Disconnected, body: (device, fsm) =>
+            .CanTransition(on: DeviceEvent.Disconnected, fromState: DeviceState.Disconnecting, toState: DeviceState.Disconnected, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: DeviceEvent.Connecting, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Available).ShouldBeEquivalentTo(TransitionResult.Success);
             })
-            .Transition(on: DeviceEvent.Available, fromState: DeviceState.Disconnected, toState: DeviceState.Available, body: (device, fsm) =>
+            .CanTransition(on: DeviceEvent.Available, fromState: DeviceState.Disconnected, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: DeviceEvent.Connecting, timeStamp: DateTime.UtcNow);
             });
