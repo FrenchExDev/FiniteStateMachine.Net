@@ -93,44 +93,44 @@ public sealed class DeviceFiniteStateMachineTests
         fsmBuilder
             .CanTransition(on: DeviceEvent.Init, fromState: DeviceState.NotInitialized, toState: DeviceState.Initing, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Initing, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Initing).ShouldBeEquivalentTo(TransitionResult.Success);
             })
             .CanTransition(on: DeviceEvent.Initing, fromState: DeviceState.Initing, toState: DeviceState.Inited, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Initing, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Inited).ShouldBeEquivalentTo(TransitionResult.Success);
             })
             .CanTransition(on: DeviceEvent.Inited, fromState: DeviceState.Inited, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Inited, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
             .CanTransition(on: DeviceEvent.Connect, fromState: DeviceState.Available, toState: DeviceState.Connecting, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Connect, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Connecting).ShouldBeEquivalentTo(TransitionResult.Success);
             })
             .CanTransition(on: DeviceEvent.Connecting, fromState: DeviceState.Connecting, toState: DeviceState.Connected, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Connecting, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Online).ShouldBeEquivalentTo(TransitionResult.Success);
             })
             .CanTransition(on: DeviceEvent.Online, fromState: DeviceState.Connected, toState: DeviceState.Online, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Connecting, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
             .CanTransition(on: DeviceEvent.Disconnect, fromState: DeviceState.Online, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Disconnect, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
             .CanTransition(on: DeviceEvent.Disconnected, fromState: DeviceState.Disconnecting, toState: DeviceState.Disconnected, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Connecting, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Available).ShouldBeEquivalentTo(TransitionResult.Success);
             })
             .CanTransition(on: DeviceEvent.Available, fromState: DeviceState.Disconnected, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Connecting, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             });
 
         var device = new Device();

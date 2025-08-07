@@ -136,21 +136,39 @@ public class DeviceWhenFiniteStateMachineTests
         fsmBuilder
             .CanTransition(on: DeviceEvent.Init, fromState: DeviceState.NotAvailable, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Init, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
             .CanTransition(on: DeviceEvent.Connect, fromState: DeviceState.Available, toState: DeviceState.Connected, body: (device, e, fsm) =>
             {
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.Connect, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
             .CanTransition(on: DeviceEvent.SwitchOnline, fromState: DeviceState.Connected, toState: DeviceState.SwitchedOnline, body: (device, e, fsm) =>
             {
                 device.ConnectionStatus = DeviceConnectionStatus.Online;
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.SwitchOnline, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
+                fsm.Fire(DeviceEvent.Connected).ShouldBeEquivalentTo(TransitionResult.Success);
             })
-            .CanTransition(on: DeviceEvent.SwitchOffline, fromState: DeviceState.SwitchedOnline, toState: DeviceState.SwitchedOffline, body: (device, e, fsm) =>
+            .CanTransition(on: DeviceEvent.Connected, fromState: DeviceState.SwitchedOnline, toState: DeviceState.Connected, body: (device, e, fsm) =>
+            {
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
+            })
+            .CanTransition(on: DeviceEvent.Connected, fromState: DeviceState.SwitchedOnline, toState: DeviceState.Available, body: (device, e, fsm) =>
+            {
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
+            })
+            .CanTransition(on: DeviceEvent.SwitchOffline, fromState: DeviceState.Connected, toState: DeviceState.SwitchedOffline, body: (device, e, fsm) =>
             {
                 device.ConnectionStatus = DeviceConnectionStatus.Offline;
-                device.History(state: fsm.CurrentState, @event: DeviceEvent.SwitchOffline, timeStamp: DateTime.UtcNow);
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
+                fsm.Fire(DeviceEvent.Connect).ShouldBeEquivalentTo(TransitionResult.Success);
+            })
+            .CanTransition(on:DeviceEvent.Connect, fromState: DeviceState.SwitchedOffline, toState: DeviceState.Connected, body: (device, e, fsm) =>
+            {
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
+            })
+            .CanTransition(on: DeviceEvent.Connected, fromState: DeviceState.SwitchedOffline, toState: DeviceState.Available, body: (device, e, fsm) =>
+            {
+                device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
            ;
 
@@ -175,11 +193,19 @@ public class DeviceWhenFiniteStateMachineTests
         }
 
         deviceFsm.Fire(DeviceEvent.SwitchOnline).ShouldBeEquivalentTo(TransitionResult.Success);
-        deviceFsm.CurrentState.ShouldBeEquivalentTo(DeviceState.SwitchedOnline);
+        deviceFsm.CurrentState.ShouldBeEquivalentTo(DeviceState.Connected);
         device.ConnectionStatus.ShouldBeEquivalentTo(DeviceConnectionStatus.Online);
 
         deviceFsm.Fire(DeviceEvent.SwitchOffline).ShouldBeEquivalentTo(TransitionResult.Success);
-        deviceFsm.CurrentState.ShouldBeEquivalentTo(DeviceState.SwitchedOffline);
+        deviceFsm.CurrentState.ShouldBeEquivalentTo(DeviceState.Connected);
+        device.ConnectionStatus.ShouldBeEquivalentTo(DeviceConnectionStatus.Offline);
+
+        deviceFsm.Fire(DeviceEvent.SwitchOnline).ShouldBeEquivalentTo(TransitionResult.Success);
+        deviceFsm.CurrentState.ShouldBeEquivalentTo(DeviceState.Connected);
+        device.ConnectionStatus.ShouldBeEquivalentTo(DeviceConnectionStatus.Online);
+
+        deviceFsm.Fire(DeviceEvent.SwitchOffline).ShouldBeEquivalentTo(TransitionResult.Success);
+        deviceFsm.CurrentState.ShouldBeEquivalentTo(DeviceState.Connected);
         device.ConnectionStatus.ShouldBeEquivalentTo(DeviceConnectionStatus.Offline);
 
         device.EventHistory.ShouldNotBeEmpty();
