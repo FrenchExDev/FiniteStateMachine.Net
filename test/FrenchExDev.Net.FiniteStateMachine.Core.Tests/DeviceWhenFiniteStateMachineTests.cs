@@ -2,6 +2,9 @@
 
 namespace FrenchExDev.Net.FiniteStateMachine.Core.Tests;
 
+/// <summary>
+/// This test class demonstrates the usage of a finite state machine to manage the states and events of a device with code execution when entering specific states.
+/// </summary>
 [TestClass]
 public class DeviceWhenFiniteStateMachineTests
 {
@@ -107,6 +110,9 @@ public class DeviceWhenFiniteStateMachineTests
         }
     }
 
+    /// <summary>
+    /// Demonstrates the usage of a finite state machine to manage the states and events of a device with code execution when entering specific states.
+    /// </summary>
     [TestMethod]
     public void TestMethod1()
     {
