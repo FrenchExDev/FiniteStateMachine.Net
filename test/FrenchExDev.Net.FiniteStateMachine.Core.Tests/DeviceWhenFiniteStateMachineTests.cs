@@ -112,7 +112,7 @@ public class DeviceWhenFiniteStateMachineTests
 
     public static List<T> AddRange<T>(IEnumerable<T> items, IEnumerable<T> items2)
     {
-        var newList = items.ToList();
+        var newList = new List<T>();
         newList.AddRange(items);
         newList.AddRange(items2);
         return newList;
