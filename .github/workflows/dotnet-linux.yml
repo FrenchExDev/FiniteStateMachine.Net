@@ -1,0 +1,39 @@
+name: .NET 9 Linux
+
+on:
+  push:
+    branches: [ "feature/*", "chore/*", "fix/*" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+
+    runs-on: linux-latest
+    env:
+      Solution_Name: FrenchExDev.Net.FiniteStateMachine
+      Test_Project_Path: ./test/FrenchExDev.Net.FiniteStateMachine.Core.Tests/FrenchExDev.Net.FiniteStateMachine.Core.Tests.csproj
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Execute unit tests
+      run: dotnet test
+
+    
