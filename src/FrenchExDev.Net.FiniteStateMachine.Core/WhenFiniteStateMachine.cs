@@ -7,7 +7,7 @@ using System.Collections.Generic;
 /// Represents a finite state machine that supports executing actions when entering specific states.
 /// </summary>
 /// <remarks>This class extends the functionality of a standard finite state machine by allowing actions to be
-/// executed when specific states are entered. These actions are defined in the <see cref="When"/> dictionary and are
+/// executed when specific states are entered. These actions are defined in the <see cref="WhenStates"/> dictionary and are
 /// invoked after a successful state transition triggered by <see cref="Fire(TTrigger)"/>.</remarks>
 /// <typeparam name="TClass">The type of the object associated with the state machine. Must be a non-nullable reference type with a parameterless
 /// constructor.</typeparam>
@@ -23,12 +23,23 @@ public class WhenFiniteStateMachine<TClass, TState, TTrigger> : FiniteStateMachi
     /// <summary>
     /// Holds a dictionary mapping states to a list of actions to be executed when the state is active and a specific trigger is fired.
     /// </summary>
-    private readonly Dictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> _when;
+    private readonly Dictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> _whenStates;
+
+    private readonly Dictionary<TTrigger, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> _whenTriggers = new();
 
     /// <summary>
     /// Gives access to the dictionary that maps states to a list of actions to be executed when the state is active and a specific trigger is fired.
     /// </summary>
-    public IReadOnlyDictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> When => _when.AsReadOnly();
+    public IReadOnlyDictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> WhenStates => _whenStates.AsReadOnly();
+
+    /// <summary>
+    /// Gets a read-only dictionary that maps triggers to a list of actions to be executed when the corresponding
+    /// trigger is activated.
+    /// </summary>
+    /// <remarks>This property provides a way to inspect the configured triggers and their associated actions 
+    /// in the finite state machine. Modifications to the returned dictionary are not allowed, ensuring  the integrity
+    /// of the trigger-action mappings.</remarks>
+    public IReadOnlyDictionary<TTrigger, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> WhenTriggers => _whenTriggers.AsReadOnly();
 
     /// <summary>
     /// Creates a new instance of the <see cref="WhenFiniteStateMachine{TClass, TState, TTrigger}"/> class with the
@@ -49,10 +60,19 @@ public class WhenFiniteStateMachine<TClass, TState, TTrigger> : FiniteStateMachi
         TState initialState,
         List<TState> states,
         Dictionary<TState, List<Transition<TClass, TState, TTrigger>>> transitions,
-        Dictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> when
+        Dictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> whenStates,
+        Dictionary<TTrigger, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> whenTriggers
     )
     {
-        var fsm = new WhenFiniteStateMachine<TClass, TState, TTrigger>(initialObject, initialState, states, transitions, when);
+        var fsm = new WhenFiniteStateMachine<TClass, TState, TTrigger>(
+            instance: initialObject,
+            initialState: initialState,
+            states: states,
+            transitions: transitions,
+            whenStates: whenStates,
+            whenTriggers: whenTriggers
+        );
+
         return fsm;
     }
 
@@ -66,7 +86,9 @@ public class WhenFiniteStateMachine<TClass, TState, TTrigger> : FiniteStateMachi
     /// name="initialState"/>.</param>
     /// <param name="transitions">A dictionary mapping each state to a list of valid transitions from that state. Each transition defines the
     /// conditions under which the state changes.</param>
-    /// <param name="when">A dictionary mapping each state to a list of actions to execute when the state is entered. Each action is
+    /// <param name="whenStates">A dictionary mapping each state to a list of actions to execute when the state is entered. Each action is
+    /// invoked with the current context, trigger, and state machine instance.</param>
+    /// <param name="whenTriggers">A dictionary mapping each state to a list of actions to execute when the evet is triggered. Each action is
     /// invoked with the current context, trigger, and state machine instance.</param>
     /// <returns>A new instance of the <see cref="WhenFiniteStateMachine{TClass, TState, TTrigger}"/> class configured with the
     /// specified states, transitions, and actions.</returns>
@@ -74,29 +96,41 @@ public class WhenFiniteStateMachine<TClass, TState, TTrigger> : FiniteStateMachi
         TState initialState,
         List<TState> states,
         Dictionary<TState, List<Transition<TClass, TState, TTrigger>>> transitions,
-        Dictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> when
+        Dictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> whenStates,
+        Dictionary<TTrigger, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> whenTriggers
     )
     {
-        var fsm = new WhenFiniteStateMachine<TClass, TState, TTrigger>(new(), initialState, states, transitions, when);
+        var fsm = new WhenFiniteStateMachine<TClass, TState, TTrigger>(new(), initialState, states, transitions, whenStates, whenTriggers);
         return fsm;
     }
 
     /// <summary>
-    /// Constructor for the WhenFiniteStateMachine class.
+    /// Creates a new instance of the <see cref="WhenFiniteStateMachine{TClass, TState, TTrigger}"/> class with the specified parameters.
     /// </summary>
-    /// <param name="instance">Instance</param>
-    /// <param name="initialState">Initial state</param>
-    /// <param name="states">List of all possible states</param>
-    /// <param name="transitions">Dictionary of state transitions</param>
-    /// <param name="when">Dictionary of actions to execute when the state is entered</param>
+    /// <param name="instance"></param>
+    /// <param name="initialState"></param>
+    /// <param name="states"></param>
+    /// <param name="transitions"></param>
+    /// <param name="whenStates"></param>
+    /// <param name="whenTriggers"></param>
     protected WhenFiniteStateMachine(
         TClass instance,
         TState initialState,
         List<TState> states, Dictionary<TState, List<Transition<TClass, TState, TTrigger>>> transitions,
-        Dictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> when
+        Dictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> whenStates,
+        Dictionary<TTrigger, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> whenTriggers
     ) : base(instance, initialState, states, transitions)
     {
-        _when = when;
+        ArgumentNullException.ThrowIfNull(instance, nameof(instance));
+        ArgumentNullException.ThrowIfNull(initialState, nameof(initialState));
+        ArgumentNullException.ThrowIfNull(states, nameof(states));
+        ArgumentNullException.ThrowIfNull(whenStates, nameof(whenStates));
+        ArgumentNullException.ThrowIfNull(whenTriggers, nameof(whenTriggers));
+        ArgumentNullException.ThrowIfNull(instance, nameof(instance));
+        ArgumentNullException.ThrowIfNull(transitions, nameof(transitions));
+
+        _whenStates = whenStates;
+        _whenTriggers = whenTriggers;
     }
 
     /// <summary>
@@ -111,14 +145,34 @@ public class WhenFiniteStateMachine<TClass, TState, TTrigger> : FiniteStateMachi
     /// indicating the reason for failure.</returns>
     public new TransitionResult Fire(TTrigger trigger)
     {
-        var result = base.Fire(trigger);
-        if (result is TransitionResult.Success)
+        var previousState = CurrentState;
+
+        // Check if there are any actions associated with the trigger
+        if (_whenTriggers.TryGetValue(trigger, out var opnTrigger))
         {
-            foreach (var action in _when.GetValueOrDefault(CurrentState, new List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>()))
+            foreach (var action in opnTrigger)
             {
                 action(Object, trigger, this);
             }
         }
-        return result;
+
+        var result = base.Fire(trigger);
+
+        switch (result)
+        {
+            case TransitionResult.InvalidTransition:
+                return TransitionResult.InvalidTransition;
+            case TransitionResult.ConditionNotMet:
+                return TransitionResult.ConditionNotMet;
+            case TransitionResult.Success:
+                if (_whenStates.TryGetValue(CurrentState, out var whenStates))
+                    foreach (var action in whenStates)
+                    {
+                        action(Object, trigger, this);
+                    }
+                return TransitionResult.Success;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result), result, "Unknown transition result.");
+        }
     }
 }

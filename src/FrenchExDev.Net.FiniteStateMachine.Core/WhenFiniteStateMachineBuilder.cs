@@ -25,7 +25,16 @@ public class WhenFiniteStateMachineBuilder<TClass, TState, TTrigger> : FiniteSta
     /// <summary>
     /// Holds a dictionary mapping states to a list of actions to be executed when the state is active and a specific trigger is fired.
     /// </summary>
-    private Dictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> _when = new();
+    private Dictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> _whenState = new();
+
+    /// <summary>
+    /// Represents a mapping of triggers to a list of actions to be executed when the trigger is activated.
+    /// </summary>
+    /// <remarks>Each trigger is associated with a list of actions that are executed in the context of a
+    /// finite state machine. The actions take the current state machine class, the trigger, and the state machine
+    /// instance as parameters.</remarks>
+
+    private Dictionary<TTrigger, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> _whenTrigger = new();
 
 
     /// <summary>
@@ -38,7 +47,7 @@ public class WhenFiniteStateMachineBuilder<TClass, TState, TTrigger> : FiniteSta
     /// machine.</returns>
     public IWhenFiniteStateMachine<TClass, TState, TTrigger> BuildWhen(TClass instance, TState initialState)
     {
-        return WhenFiniteStateMachine<TClass, TState, TTrigger>.Create(instance, initialState, _validStates, _transitions, _when);
+        return WhenFiniteStateMachine<TClass, TState, TTrigger>.Create(instance, initialState, _validStates, _transitions, _whenState, _whenTrigger);
     }
 
     /// <summary>
@@ -51,10 +60,10 @@ public class WhenFiniteStateMachineBuilder<TClass, TState, TTrigger> : FiniteSta
     /// finite state machine.</returns>
     public IWhenFiniteStateMachine<TClass, TState, TTrigger> BuildWhen(TState initialState)
     {
-        return WhenFiniteStateMachine<TClass, TState, TTrigger>.Create(initialState, _validStates, _transitions, _when);
+        return WhenFiniteStateMachine<TClass, TState, TTrigger>.Create(initialState, _validStates, _transitions, _whenState, _whenTrigger);
     }
 
-    public IFiniteStateMachineBuilder<TClass, TState, TTrigger> CanTransition(
+    public IFiniteStateMachineBuilder<TClass, TState, TTrigger> Transition(
         TState fromState,
         TState toState,
         TTrigger on,
@@ -79,12 +88,32 @@ public class WhenFiniteStateMachineBuilder<TClass, TState, TTrigger> : FiniteSta
     /// chaining.</returns>
     public IWhenFiniteStateMachineBuilder<TClass, TState, TTrigger> When(TState state, Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>> action)
     {
-        if (!_when.ContainsKey(state))
+        if (!_whenState.ContainsKey(state))
         {
-            _when[state] = new();
+            _whenState[state] = new();
         }
 
-        _when[state].Add(action);
+        _whenState[state].Add(action);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the finite state machine to execute the specified action when the given trigger occurs.
+    /// </summary>
+    /// <param name="event">The trigger that causes the action to execute. Cannot be null.</param>
+    /// <param name="action">The action to execute when the specified trigger occurs. The action receives the current instance of 
+    /// <typeparamref name="TClass"/>, the trigger, and the finite state machine as parameters.</param>
+    /// <returns>An instance of <see cref="IWhenFiniteStateMachineBuilder{TClass, TState, TTrigger}"/> to allow for method
+    /// chaining.</returns>
+    public IWhenFiniteStateMachineBuilder<TClass, TState, TTrigger> On(TTrigger @event, Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>> action)
+    {
+        if (!_whenTrigger.ContainsKey(@event))
+        {
+            _whenTrigger[@event] = new();
+        }
+
+        _whenTrigger[@event].Add(action);
 
         return this;
     }
@@ -97,7 +126,7 @@ public class WhenFiniteStateMachineBuilder<TClass, TState, TTrigger> : FiniteSta
     /// <returns></returns>
     IFiniteStateMachine<TClass, TState, TTrigger> IFiniteStateMachineBuilder<TClass, TState, TTrigger>.Build(TClass instance, TState initialState)
     {
-        return Build(instance, initialState);
+        return BuildWhen(instance, initialState);
     }
 
     /// <summary>
@@ -107,7 +136,7 @@ public class WhenFiniteStateMachineBuilder<TClass, TState, TTrigger> : FiniteSta
     /// <returns></returns>
     IFiniteStateMachine<TClass, TState, TTrigger> IFiniteStateMachineBuilder<TClass, TState, TTrigger>.Build(TState initialState)
     {
-        return Build(initialState);
+        return BuildWhen(initialState);
     }
 
     /// <summary>

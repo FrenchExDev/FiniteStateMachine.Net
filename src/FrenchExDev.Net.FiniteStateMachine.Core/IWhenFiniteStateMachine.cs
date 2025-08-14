@@ -25,5 +25,5 @@ public interface IWhenFiniteStateMachine<TClass, TState, TTrigger> : IFiniteStat
     /// <remarks>The actions in the list are executed in the order they appear when the associated state is
     /// active  and the corresponding trigger is fired. This property is typically used to inspect or configure 
     /// state-specific behavior in the finite state machine.</remarks>
-    IReadOnlyDictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> When { get; }
+    IReadOnlyDictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> WhenStates { get; }
 }

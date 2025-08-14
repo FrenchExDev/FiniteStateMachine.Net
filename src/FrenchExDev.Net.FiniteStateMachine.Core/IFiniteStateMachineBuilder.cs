@@ -37,7 +37,7 @@ public interface IFiniteStateMachineBuilder<TClass, TState, TTrigger>
     /// <param name="condition">An optional condition that must evaluate to <see langword="true"/> for the transition to occur.  The condition
     /// receives the instance of the class, the trigger, and the finite state machine as parameters.</param>
     /// <returns>The current instance of the finite state machine builder, allowing for further configuration.</returns>
-    IFiniteStateMachineBuilder<TClass, TState, TTrigger> CanTransition(TState fromState, TState toState, TTrigger on, Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>? body = null, Func<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>, bool>? condition = null);
+    IFiniteStateMachineBuilder<TClass, TState, TTrigger> Transition(TState fromState, TState toState, TTrigger on, Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>? body = null, Func<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>, bool>? condition = null);
 
     /// <summary>
     /// Builds and returns a finite state machine configured with the specified instance and initial state.

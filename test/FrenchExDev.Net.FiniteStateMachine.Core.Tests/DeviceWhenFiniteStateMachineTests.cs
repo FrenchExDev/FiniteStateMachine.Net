@@ -2,6 +2,15 @@
 
 namespace FrenchExDev.Net.FiniteStateMachine.Core.Tests;
 
+public static class Extensions
+{
+    public static List<T> AddRange<T>(this List<T> list, IEnumerable<T> items)
+    {
+        list.AddRange(items);
+        return list;
+    }
+}
+
 /// <summary>
 /// This test class demonstrates the usage of a finite state machine to manage the states and events of a device with code execution when entering specific states.
 /// </summary>
@@ -110,6 +119,14 @@ public class DeviceWhenFiniteStateMachineTests
         }
     }
 
+    public static List<T> AddRange<T>(IEnumerable<T> items, IEnumerable<T> items2)
+    {
+        var newList = items.ToList();
+        newList.AddRange(items);
+        newList.AddRange(items2);
+        return newList;
+    }
+
     /// <summary>
     /// Demonstrates the usage of a finite state machine to manage the states and events of a device with code execution when entering specific states.
     /// </summary>
@@ -118,10 +135,16 @@ public class DeviceWhenFiniteStateMachineTests
     {
         var fsmBuilder = new WhenFiniteStateMachineBuilder<Device, DeviceState, DeviceEvent>();
 
-        List<DeviceOperation> whenConnectedAndIsOfflineOperations = [DeviceOperation.Disconnect, DeviceOperation.SwitchOnline, DeviceOperation.Upload, DeviceOperation.Download];
-        List<DeviceOperation> whenConnectedAndIsOnlineOperations = [DeviceOperation.Disconnect, DeviceOperation.SwitchOffline, DeviceOperation.Upload, DeviceOperation.Download];
+        List<DeviceOperation> whenConnectedCommons = [DeviceOperation.Disconnect, DeviceOperation.Upload, DeviceOperation.Download];
+
+        List<DeviceOperation> whenConnectedAndIsOfflineOperations = AddRange(whenConnectedCommons, [DeviceOperation.SwitchOnline]);
+        List<DeviceOperation> whenConnectedAndIsOnlineOperations = AddRange(whenConnectedCommons, [DeviceOperation.SwitchOffline]);
 
         fsmBuilder
+            .On(DeviceEvent.Init, (device, e, fsm) =>
+            {
+                device.ResetAvailableOperations([DeviceOperation.Connect]);
+            })
             .When(DeviceState.Disconnected, (device, e, fsm) =>
             {
                 device.ResetAvailableOperations([DeviceOperation.Connect]);
@@ -140,39 +163,39 @@ public class DeviceWhenFiniteStateMachineTests
             });
 
         fsmBuilder
-            .CanTransition(on: DeviceEvent.Init, fromState: DeviceState.NotAvailable, toState: DeviceState.Available, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Init, fromState: DeviceState.NotAvailable, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
-            .CanTransition(on: DeviceEvent.Connect, fromState: DeviceState.Available, toState: DeviceState.Connected, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Connect, fromState: DeviceState.Available, toState: DeviceState.Connected, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
-            .CanTransition(on: DeviceEvent.SwitchOnline, fromState: DeviceState.Connected, toState: DeviceState.SwitchedOnline, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.SwitchOnline, fromState: DeviceState.Connected, toState: DeviceState.SwitchedOnline, body: (device, e, fsm) =>
             {
                 device.ConnectionStatus = DeviceConnectionStatus.Online;
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Connected).ShouldBeEquivalentTo(TransitionResult.Success);
             })
-            .CanTransition(on: DeviceEvent.Connected, fromState: DeviceState.SwitchedOnline, toState: DeviceState.Connected, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Connected, fromState: DeviceState.SwitchedOnline, toState: DeviceState.Connected, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
-            .CanTransition(on: DeviceEvent.Connected, fromState: DeviceState.SwitchedOnline, toState: DeviceState.Available, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Connected, fromState: DeviceState.SwitchedOnline, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
-            .CanTransition(on: DeviceEvent.SwitchOffline, fromState: DeviceState.Connected, toState: DeviceState.SwitchedOffline, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.SwitchOffline, fromState: DeviceState.Connected, toState: DeviceState.SwitchedOffline, body: (device, e, fsm) =>
             {
                 device.ConnectionStatus = DeviceConnectionStatus.Offline;
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
                 fsm.Fire(DeviceEvent.Connect).ShouldBeEquivalentTo(TransitionResult.Success);
             })
-            .CanTransition(on:DeviceEvent.Connect, fromState: DeviceState.SwitchedOffline, toState: DeviceState.Connected, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Connect, fromState: DeviceState.SwitchedOffline, toState: DeviceState.Connected, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
-            .CanTransition(on: DeviceEvent.Connected, fromState: DeviceState.SwitchedOffline, toState: DeviceState.Available, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Connected, fromState: DeviceState.SwitchedOffline, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
