@@ -2,15 +2,6 @@
 
 namespace FrenchExDev.Net.FiniteStateMachine.Core.Tests;
 
-public static class Extensions
-{
-    public static List<T> AddRange<T>(this List<T> list, IEnumerable<T> items)
-    {
-        list.AddRange(items);
-        return list;
-    }
-}
-
 /// <summary>
 /// This test class demonstrates the usage of a finite state machine to manage the states and events of a device with code execution when entering specific states.
 /// </summary>
