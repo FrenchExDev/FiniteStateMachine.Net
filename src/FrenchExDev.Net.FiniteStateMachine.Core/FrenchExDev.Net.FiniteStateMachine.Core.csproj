@@ -1,9 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Authors>Stéphane ERARD</Authors>
+		<Company>FrenchExDev</Company>
+		<Description>A tiny &amp; flexible, enum-typed generic Finite State Machine library for .NET, written in C#.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/FrenchExDev/FiniteStateMachine.Net/</RepositoryUrl>
+		<PackageVersion>1.0.1</PackageVersion>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
+	<ItemGroup>
+		<None Include="..\../README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
 </Project>

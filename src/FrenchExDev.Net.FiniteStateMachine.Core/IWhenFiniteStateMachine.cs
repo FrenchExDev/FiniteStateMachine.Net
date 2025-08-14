@@ -26,4 +26,14 @@ public interface IWhenFiniteStateMachine<TClass, TState, TTrigger> : IFiniteStat
     /// active  and the corresponding trigger is fired. This property is typically used to inspect or configure 
     /// state-specific behavior in the finite state machine.</remarks>
     IReadOnlyDictionary<TState, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> WhenStates { get; }
+
+
+    /// <summary>
+    /// Gets a read-only dictionary that maps triggers to a list of actions to be executed when the corresponding
+    /// trigger is activated.
+    /// </summary>
+    /// <remarks>This property provides a way to inspect the configured triggers and their associated actions 
+    /// in the finite state machine. Modifications to the returned dictionary are not allowed, ensuring  the integrity
+    /// of the trigger-action mappings.</remarks>
+    IReadOnlyDictionary<TTrigger, List<Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>>> WhenTriggers { get; }
 }

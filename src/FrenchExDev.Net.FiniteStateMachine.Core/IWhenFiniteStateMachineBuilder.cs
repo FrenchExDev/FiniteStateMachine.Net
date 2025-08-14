@@ -44,4 +44,14 @@ public interface IWhenFiniteStateMachineBuilder<TClass, TState, TTrigger> : IFin
     /// <returns>An <see cref="IWhenFiniteStateMachine{TClass, TState, TTrigger}"/> instance configured with the specified
     /// initial state.</returns>
     IWhenFiniteStateMachine<TClass, TState, TTrigger> BuildWhen(TState initialState);
+
+    /// <summary>
+    /// Configures the finite state machine to execute the specified action when the given trigger occurs.
+    /// </summary>
+    /// <param name="event">The trigger that causes the action to execute. Cannot be null.</param>
+    /// <param name="action">The action to execute when the specified trigger occurs. The action receives the current instance of 
+    /// <typeparamref name="TClass"/>, the trigger, and the finite state machine as parameters.</param>
+    /// <returns>An instance of <see cref="IWhenFiniteStateMachineBuilder{TClass, TState, TTrigger}"/> to allow for method
+    /// chaining.</returns>
+    IWhenFiniteStateMachineBuilder<TClass, TState, TTrigger> On(TTrigger @event, Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>> action);
 }
