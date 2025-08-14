@@ -23,15 +23,15 @@ public sealed class FiniteStateMachineTests
         var doorFsmBuilder = new FiniteStateMachineBuilder<Door, DoorState, DoorEvent>();
 
         doorFsmBuilder
-            .CanTransition(fromState: DoorState.Closed, toState: DoorState.Open, on: DoorEvent.Open)
-            .CanTransition(fromState: DoorState.Open, toState: DoorState.Closed, on: DoorEvent.Close)
-            .CanTransition(fromState: DoorState.Closed, toState: DoorState.Locked, on: DoorEvent.Lock)
-            .CanTransition(fromState: DoorState.Locked, toState: DoorState.Closed, on: DoorEvent.Unlock, body: (door, e, fsm) =>
+            .Transition(fromState: DoorState.Closed, toState: DoorState.Open, on: DoorEvent.Open)
+            .Transition(fromState: DoorState.Open, toState: DoorState.Closed, on: DoorEvent.Close)
+            .Transition(fromState: DoorState.Closed, toState: DoorState.Locked, on: DoorEvent.Lock)
+            .Transition(fromState: DoorState.Locked, toState: DoorState.Closed, on: DoorEvent.Unlock, body: (door, e, fsm) =>
             {
                 door.Unlocked = true;
                 fsm.Fire(DoorEvent.Unlock).ShouldBeEquivalentTo(TransitionResult.InvalidTransition);
             })
-            .CanTransition(on: DoorEvent.Open, fromState: DoorState.Locked, toState: DoorState.Open, condition: (door, e, fsm) => door.HasKey)
+            .Transition(on: DoorEvent.Open, fromState: DoorState.Locked, toState: DoorState.Open, condition: (door, e, fsm) => door.HasKey)
             ;
 
         var door1 = new Door();

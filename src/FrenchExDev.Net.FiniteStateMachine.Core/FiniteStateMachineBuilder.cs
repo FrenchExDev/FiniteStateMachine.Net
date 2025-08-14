@@ -66,7 +66,7 @@ public class FiniteStateMachineBuilder<TClass, TState, TTrigger>
     /// <param name="body"></param>
     /// <param name="condition"></param>
     /// <returns></returns>
-    public FiniteStateMachineBuilder<TClass, TState, TTrigger> CanTransition(TTrigger on, TState fromState, TState toState, Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>? body = null, Func<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>, bool>? condition = null)
+    public FiniteStateMachineBuilder<TClass, TState, TTrigger> Transition(TTrigger on, TState fromState, TState toState, Action<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>>? body = null, Func<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>, bool>? condition = null)
     {
         /// adds both fromState and toState as valid states
         State(fromState);

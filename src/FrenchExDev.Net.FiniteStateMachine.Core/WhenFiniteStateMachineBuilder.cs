@@ -71,7 +71,7 @@ public class WhenFiniteStateMachineBuilder<TClass, TState, TTrigger> : FiniteSta
         Func<TClass, TTrigger, IFiniteStateMachine<TClass, TState, TTrigger>, bool>? condition = null
     )
     {
-        base.CanTransition(on, fromState, toState, body, condition);
+        base.Transition(on, fromState, toState, body, condition);
         return this;
     }
 

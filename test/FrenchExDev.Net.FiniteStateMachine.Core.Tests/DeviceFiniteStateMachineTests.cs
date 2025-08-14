@@ -215,7 +215,7 @@ public sealed class DeviceFiniteStateMachineTests
         // Define the transitions for the finite state machine, specifying the events, states, and actions to be taken during each transition.
         fsmBuilder
             // Define the initial state of the device as NotInitialized.
-            .CanTransition(on: DeviceEvent.Init, fromState: DeviceState.NotInitialized, toState: DeviceState.Initing, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Init, fromState: DeviceState.NotInitialized, toState: DeviceState.Initing, body: (device, e, fsm) =>
             {
                 // Record the current state and event in the device's history.
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
@@ -223,7 +223,7 @@ public sealed class DeviceFiniteStateMachineTests
                 fsm.Fire(DeviceEvent.Initing).ShouldBeEquivalentTo(TransitionResult.Success);
             })
             // Define the transition from Initing to Inited state.
-            .CanTransition(on: DeviceEvent.Initing, fromState: DeviceState.Initing, toState: DeviceState.Inited, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Initing, fromState: DeviceState.Initing, toState: DeviceState.Inited, body: (device, e, fsm) =>
             {
                 // Record the current state and event in the device's history.
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
@@ -231,13 +231,13 @@ public sealed class DeviceFiniteStateMachineTests
                 fsm.Fire(DeviceEvent.Inited).ShouldBeEquivalentTo(TransitionResult.Success);
             })
             // Define the transition from Inited to Available state.
-            .CanTransition(on: DeviceEvent.Inited, fromState: DeviceState.Inited, toState: DeviceState.Available, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Inited, fromState: DeviceState.Inited, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
                 // Record the current state and event in the device's history.
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
             // Define the transition from Available to Connecting state.
-            .CanTransition(on: DeviceEvent.Connect, fromState: DeviceState.Available, toState: DeviceState.Connecting, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Connect, fromState: DeviceState.Available, toState: DeviceState.Connecting, body: (device, e, fsm) =>
             {
                 // Record the current state and event in the device's history.
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
@@ -245,7 +245,7 @@ public sealed class DeviceFiniteStateMachineTests
                 fsm.Fire(DeviceEvent.Connecting).ShouldBeEquivalentTo(TransitionResult.Success);
             })
             // Define the transition from Connecting to Connected state.
-            .CanTransition(on: DeviceEvent.Connecting, fromState: DeviceState.Connecting, toState: DeviceState.Connected, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Connecting, fromState: DeviceState.Connecting, toState: DeviceState.Connected, body: (device, e, fsm) =>
             {
                 // Record the current state and event in the device's history.
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
@@ -253,19 +253,19 @@ public sealed class DeviceFiniteStateMachineTests
                 fsm.Fire(DeviceEvent.Online).ShouldBeEquivalentTo(TransitionResult.Success);
             })
             // Define the transition from Connected to Online state.
-            .CanTransition(on: DeviceEvent.Online, fromState: DeviceState.Connected, toState: DeviceState.Online, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Online, fromState: DeviceState.Connected, toState: DeviceState.Online, body: (device, e, fsm) =>
             {
                 // Record the current state and event in the device's history.
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
             // Define the transition from Online to Disconnecting state.
-            .CanTransition(on: DeviceEvent.Disconnect, fromState: DeviceState.Online, toState: DeviceState.Available, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Disconnect, fromState: DeviceState.Online, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
                 // Record the current state and event in the device's history.
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
             })
             // Define the transition from Available to Disconnecting state.
-            .CanTransition(on: DeviceEvent.Disconnected, fromState: DeviceState.Disconnecting, toState: DeviceState.Disconnected, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Disconnected, fromState: DeviceState.Disconnecting, toState: DeviceState.Disconnected, body: (device, e, fsm) =>
             {
                 // Record the current state and event in the device's history.
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
@@ -273,7 +273,7 @@ public sealed class DeviceFiniteStateMachineTests
                 fsm.Fire(DeviceEvent.Available).ShouldBeEquivalentTo(TransitionResult.Success);
             })
             // Define the transition from Disconnected to Available state.
-            .CanTransition(on: DeviceEvent.Available, fromState: DeviceState.Disconnected, toState: DeviceState.Available, body: (device, e, fsm) =>
+            .Transition(on: DeviceEvent.Available, fromState: DeviceState.Disconnected, toState: DeviceState.Available, body: (device, e, fsm) =>
             {
                 // Record the current state and event in the device's history.
                 device.History(state: fsm.CurrentState, @event: e, timeStamp: DateTime.UtcNow);
