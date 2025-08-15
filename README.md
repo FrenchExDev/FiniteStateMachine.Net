@@ -1,4 +1,4 @@
-# FrenchExDev.Net.FiniteStateMachine.Core
+# `FrenchExDev.Net.FiniteStateMachine.Core`
 
 A `tiny` & `flexible`, `enum-typed` `generic` `Finite State Machine` `library` for `.NET`, written in `C#`.
 
