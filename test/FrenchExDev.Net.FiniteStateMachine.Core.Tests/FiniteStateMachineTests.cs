@@ -47,6 +47,7 @@ public sealed class FiniteStateMachineTests
 
         door1fsm.Fire(DoorEvent.Lock).ShouldBeEquivalentTo(TransitionResult.Success);
         door1fsm.CurrentState.ShouldBeEquivalentTo(DoorState.Locked);
+        door1.Locked.ShouldBeTrue();
 
         door1fsm.Fire(DoorEvent.Unlock).ShouldBeEquivalentTo(TransitionResult.Success);
         door1fsm.CurrentState.ShouldBeEquivalentTo(DoorState.Closed);
