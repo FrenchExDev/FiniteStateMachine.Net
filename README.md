@@ -1,17 +1,18 @@
 # FrenchExDev.Net.FiniteStateMachine.Core
 
 A tiny & flexible, enum-typed generic Finite State Machine library for .NET, written in C#.
+
 This library enables you to separate modeling and building of executable stateful workflows, with support for custom actions, conditions, and transition-specific behaviors.
 
 ---
 
 ## Features
 
-- **Strongly-typed FSMs**: Use your own types for states, triggers, and context objects.
-- **Builder Pattern**: Fluent API for defining states, transitions, and actions.
-- **Transition Actions & Conditions**: Attach logic and guards to transitions.
-- **State Entry Actions**: Execute logic when entering a state.
-- **Unit-tested**: Includes comprehensive tests using a typical FSM scenario.
+- **`Strongly-typed FSMs`** Use your own types for states, triggers, and context objects.
+- **`Builder Pattern`** Fluent API for defining states, transitions, and actions.
+- **`Transition Actions & Conditions`** Attach logic and guards to transitions.
+- **`State Entry Actions`** Execute logic when entering a state.
+- **`Unit-tested`** Includes comprehensive tests using a typical FSM scenario.
 
 ---
 
