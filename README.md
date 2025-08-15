@@ -58,13 +58,16 @@ var builder = new FiniteStateMachineBuilder<Door, DoorState, DoorEvent>();
 builder
     .Transition(fromState: DoorState.Closed, toState: DoorState.Open, on: DoorEvent.Open)
     .Transition(fromState: DoorState.Open, toState: DoorState.Closed, on: DoorEvent.Close)
-    .Transition(fromState: DoorState.Closed, toState: DoorState.Locked, on: DoorEvent.Lock, body: (door, e, fsm) => {
+    .Transition(fromState: DoorState.Closed, toState: DoorState.Locked, on: DoorEvent.Lock, body: (door, e, fsm) =>
+    {
         door.Locked = true;
-    })
+    }, condition: (door, e, fsm) => !door.Locked)
     .Transition(fromState: DoorState.Locked, toState: DoorState.Closed, on: DoorEvent.Unlock, body: (door, e, fsm) =>
     {
         door.Locked = false;
-    });
+    }, condition: (door, e, fsm) => door.Locked)
+    .Transition(on: DoorEvent.Open, fromState: DoorState.Locked, toState: DoorState.Open, condition: (door, e, fsm) => door.HasKey)
+    ;
 
 var door = new Door();
 var fsm = builder.Build(door, DoorState.Closed);

@@ -9,7 +9,7 @@ public sealed class FiniteStateMachineTests
     internal enum DoorEvent { Open, Close, Lock, Unlock }
     internal class Door
     {
-        public bool Unlocked { get; set; }
+        public bool Locked { get; set; }
         public bool HasKey { get; set; }
 
         public Door()
@@ -25,12 +25,14 @@ public sealed class FiniteStateMachineTests
         doorFsmBuilder
             .Transition(fromState: DoorState.Closed, toState: DoorState.Open, on: DoorEvent.Open)
             .Transition(fromState: DoorState.Open, toState: DoorState.Closed, on: DoorEvent.Close)
-            .Transition(fromState: DoorState.Closed, toState: DoorState.Locked, on: DoorEvent.Lock)
+            .Transition(fromState: DoorState.Closed, toState: DoorState.Locked, on: DoorEvent.Lock, body: (door, e, fsm) =>
+            {
+                door.Locked = true;
+            }, condition: (door, e, fsm) => !door.Locked)
             .Transition(fromState: DoorState.Locked, toState: DoorState.Closed, on: DoorEvent.Unlock, body: (door, e, fsm) =>
             {
-                door.Unlocked = true;
-                fsm.Fire(DoorEvent.Unlock).ShouldBeEquivalentTo(TransitionResult.InvalidTransition);
-            })
+                door.Locked = false;
+            }, condition: (door, e, fsm) => door.Locked)
             .Transition(on: DoorEvent.Open, fromState: DoorState.Locked, toState: DoorState.Open, condition: (door, e, fsm) => door.HasKey)
             ;
 
@@ -48,6 +50,6 @@ public sealed class FiniteStateMachineTests
 
         door1fsm.Fire(DoorEvent.Unlock).ShouldBeEquivalentTo(TransitionResult.Success);
         door1fsm.CurrentState.ShouldBeEquivalentTo(DoorState.Closed);
-        door1.Unlocked.ShouldBeTrue();
+        door1.Locked.ShouldBeTrue();
     }
 }
