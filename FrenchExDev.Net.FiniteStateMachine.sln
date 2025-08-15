@@ -13,7 +13,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.FiniteState
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{9C8CB701-102D-CF49-A3E0-89AC09D42C2C}"
 	ProjectSection(SolutionItems) = preProject
+		.env = .env
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
 		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{99FF0342-68E5-FA1A-2354-96BEBB0DC160}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\Project.ps1 = scripts\Project.ps1
 	EndProjectSection
 EndProject
 Global
@@ -37,6 +45,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{A9CFC179-01DA-4F55-A34C-E88314C31A05} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{6A58BE2D-D980-4659-9C60-F4E710E8C6EE} = {CDA530B6-4E66-4DCE-97BD-2E6F6F87C7FC}
+		{99FF0342-68E5-FA1A-2354-96BEBB0DC160} = {9C8CB701-102D-CF49-A3E0-89AC09D42C2C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E4F719B-1639-4D15-A787-1FFFEC2628CC}

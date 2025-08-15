@@ -5,7 +5,7 @@
 		<Description>A tiny &amp; flexible, enum-typed generic Finite State Machine library for .NET, written in C#.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/FrenchExDev/FiniteStateMachine.Net/</RepositoryUrl>
-		<PackageVersion>1.0.3</PackageVersion>
+		<PackageVersion>1.0.4</PackageVersion>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageId>FrenchExDev.Net.FiniteStateMachine.Core</PackageId>
 		<PackageTags>FiniteStateMachine;FSM;StateMachine;Enum;Generic;C#</PackageTags>
