@@ -1,8 +1,8 @@
 # FrenchExDev.Net.FiniteStateMachine.Core
 
-A tiny & flexible, enum-typed generic Finite State Machine library for .NET, written in C#.
+A `tiny` & `flexible`, `enum-typed` `generic` `Finite State Machine` `library` for `.NET`, written in `C#`.
 
-This library enables you to separate modeling and building of executable stateful workflows, with support for custom actions, conditions, and transition-specific behaviors.
+This `library` enables you to `separate` `modeling` and `building` of `executable stateful machines`, with support for `custom actions`, `conditions`, and `transition-specific behaviors`.
 
 ---
 
@@ -24,7 +24,7 @@ This library enables you to separate modeling and building of executable statefu
 dotnet add package FrenchExDev.Net.FiniteStateMachine.Core
 ```
 
-### 2. Create a Class
+### 2. Define your Class
 
 Create a class that will represent the context of your state machine:
 
@@ -78,12 +78,13 @@ fsm.Fire(DoorEvent.Close);  // Door transitions to Closed, returned TransitionRe
 fsm.Fire(DoorEvent.Lock);   // Door transitions to Locked, sets door.Locked = true, returned TransitionResult.Success
 fsm.Fire(DoorEvent.Unlock); // Door transitions to Closed, sets door.Locked = false, returned TransitionResult.Success
 ```
-
 _____
 
 # Advanced: State Entry Actions
 
 imagine the following scenarios:
+* You have a device with Available Operations and History
+* Your have its State and Event enums
 
 ```csharp
 using FrenchExDev.Net.FiniteStateMachine.Core;
@@ -98,10 +99,10 @@ public enum DeviceEvent { Init, Inited, Connect }
 
 ```
 
-You can use the `WhenFiniteStateMachineBuilder` to define actions that run 
+You can use the `WhenFiniteStateMachineBuilder` to define `actions` that run 
 
-* when a specific trigger is fired using `.On(DeviceEvent trigger, Action<Device, DeviceEvent, WhenFiniteStateMachine<Device, DeviceState, DeviceEvent>> action);`
-* whenever a state is entered, regardless of the trigger using `.When(DeviceState state, Action<Device, DeviceEvent, WhenFiniteStateMachine<Device, DeviceState, DeviceEvent>> action).);`
+* when `a specific event` is fired using `.On(DeviceEvent trigger, Action<Device, DeviceEvent, WhenFiniteStateMachine<Device, DeviceState, DeviceEvent>> action);`
+* whenever `a specific state` is entered, regardless of the trigger using `.When(DeviceState state, Action<Device, DeviceEvent, WhenFiniteStateMachine<Device, DeviceState, DeviceEvent>> action).);`
 
 ```csharp
 using FrenchExDev.Net.FiniteStateMachine.Core;
@@ -139,17 +140,34 @@ fsm.Fire(DeviceEvent.Init);    // Device transitions to Initing, then to Availab
 fsm.Fire(DeviceEvent.Connect); // Device transitions to Connected, returned TransitionResult.Success
 ```
 
-
 # Running Tests
 
-Navigate to the test/FrenchExDev.Net.FiniteStateMachine.Core.Tests directory and run:
+* [Device Test](https://github.com/FrenchExDev/FrenchExDev.FiniteStateMachine.Net/blob/main/test/FrenchExDev.Net.FiniteStateMachine.Core.Tests/DeviceFiniteStateMachineTests.cs)
+* [Door Test](https://github.com/FrenchExDev/FrenchExDev.FiniteStateMachine.Net/blob/main/test/FrenchExDev.Net.FiniteStateMachine.Core.Tests/FiniteStateMachineTests.cs)
+* [WhenFiniteStateMachine Test](https://github.com/FrenchExDev/FrenchExDev.FiniteStateMachine.Net/blob/main/test/FrenchExDev.Net.FiniteStateMachine.Core.Tests/DeviceWhenFiniteStateMachineTests.cs)
+
+Open a `Terminal` in the `.sln` directory and run:
 
 ```powershell
 dotnet test
 ```
 
+Which should output something like:
+```powershell
+PS C:\code\FSM.Net\FSM.Net_i1\FrenchExDev.FiniteStateMachine.Net> dotnet test
+Restauration terminée (0,9s)
+  FrenchExDev.Net.FiniteStateMachine.Core a réussi (3,7s) → src\FrenchExDev.Net.FiniteStateMachine.Core\bin\Debug\net9.0\FrenchExDev.Net.FiniteStateMachine.Core.dll
+  FrenchExDev.Net.FiniteStateMachine.Core.Tests a réussi (0,9s) → test\FrenchExDev.Net.FiniteStateMachine.Core.Tests\bin\Debug\net9.0\FrenchExDev.Net.FiniteStateMachine.Core.Tests.dll
+  Test de FrenchExDev.Net.FiniteStateMachine.Core.Tests : a réussi (0,8 s)
+
+Récapitulatif du test : total : 3; échec : 0; réussi : 3; ignoré : 0; durée : 0,4s
+Générer a réussi dans 6,7s
+```
+
 ---
 
-Copyright (c) 2025 FrenchExDev Stéphane ERARD
+Copyright (c) 2025 `FrenchExDev` `Stéphane ERARD` email@`stephane.erard@gmail.com`
 
-This project is provided for educational purposes only.
+Contact for licensing: `stephane.erard@gmail.com`.
+
+This project is provided for `educational purposes only`.
